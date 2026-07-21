@@ -1,0 +1,5 @@
+#!/usr/bin/env cjsh
+CJSH_SHOW_CREATED=1
+CJSH_MAN_PATH="/usr/bin/man"
+DO_HANDLER_THING=0
+source ~/.env

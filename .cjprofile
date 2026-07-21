@@ -1,0 +1,11 @@
+# cjshopt login-startup-arg --no-titleline
+# cjshopt login-startup-arg --show-startup-time
+# cjshopt login-startup-arg --posix
+# cjshopt login-startup-arg --minimal
+# cjshopt login-startup-arg --secure
+# cjshopt login-startup-arg --no-prompt-vars
+# cjshopt login-startup-arg --no-titleline
+# cjshopt login-startup-arg --no-syntax-highlighting
+# cjshopt login-startup-arg --no-completion-learning
+# cjshopt status-hints off
+source ~/.profile
