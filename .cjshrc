@@ -1,14 +1,22 @@
 set -o globstar
 
-PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
 PS1="cjsh> "
+
+  PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
+
+  if [ "${SHLVL:-0}" -eq 3 ]; then
+      PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
+  elif [ -z "${TMUX:-}" ] && [ "${SHLVL:-0}" -eq 2 ]; then
+      PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
+  fi
+
 
 cjsh_prompt_status_precmd() {
     local last_status=$?
 
     if [ "$last_status" -eq 0 ]; then
         PS1="cjsh> "
-    elif [ "$last_status" -eq 127 ]; then
+    elif [ "$last_status" -eq 127 ] || [ "$last_status" -eq 137 ] || [ "$last_status" -eq 134 ]; then
         PS1="[color=ansi-red]$last_status[/color] cjsh> "
     else
         PS1="[color=ansi-yellow]$last_status[/color] cjsh> "
