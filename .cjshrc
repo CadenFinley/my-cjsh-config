@@ -48,7 +48,7 @@ cjshopt keybind ext set 'alt-l' --title 'Previous Directory' 'cjsh-widget set-bu
 cjshopt keybind ext set 'alt-!' --title 'Run Previous Command' 'cjsh-widget set-buffer "!!"; cjsh-widget accept'
 cjshopt keybind ext set 'alt-e' --title 'Edit Current Line (fc)' 'cjsh-widget set-buffer "fc -c \"$CJSH_LINE\""; cjsh-widget accept'
 cjshopt keybind ext set 'ctrl-z' --title 'run fg' 'cjsh-widget set-buffer "fg"; cjsh-widget accept'
-cjshopt keybind set history-search ctrl+space
+# cjshopt keybind set history-search ctrl+space
 cjshopt keybind set toggle-mouse-reporting alt-m
 
 # command palette snippets

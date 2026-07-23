@@ -7,5 +7,6 @@
 # cjshopt login-startup-arg --no-titleline
 # cjshopt login-startup-arg --no-syntax-highlighting
 # cjshopt login-startup-arg --no-completion-learning
-# cjshopt status-hints off
+# cjshopt login-startup-arg --no-colors
+cjshopt status-hints off
 source ~/.profile
