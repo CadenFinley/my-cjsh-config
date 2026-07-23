@@ -1,15 +1,12 @@
 set -o globstar
 
-PS1="cjsh> "
+PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
 
-  PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
-
-  if [ "${SHLVL:-0}" -eq 3 ]; then
-      PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
-  elif [ -z "${TMUX:-}" ] && [ "${SHLVL:-0}" -eq 2 ]; then
-      PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
-  fi
-
+if [ "${SHLVL:-0}" -eq 3 ]; then
+	PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
+elif [ -z "${TMUX:-}" ] && [ "${SHLVL:-0}" -eq 2 ]; then
+    PS1_FINAL="[ic-diminish]SHLVL=$SHLVL[/] $PS1_FINAL"
+fi
 
 cjsh_prompt_status_precmd() {
     local last_status=$?
@@ -25,9 +22,8 @@ cjsh_prompt_status_precmd() {
     return "$last_status"
 }
 
-if command -v hook >/dev/null 2>&1; then
-    hook add precmd cjsh_prompt_status_precmd
-fi
+# PS1="cjsh> "
+# hook add precmd cjsh_prompt_status_precmd
 
 # cjshopt
 cjshopt current-line-number-highlight on
