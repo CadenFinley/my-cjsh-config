@@ -1,6 +1,9 @@
 if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 cjshopt login-startup-arg --minimal
 cjshopt login-startup-arg --secure
+cjshopt status-hints off
+else 
+source ~/.profile
 fi
 # cjshopt login-startup-arg --no-titleline
 # cjshopt login-startup-arg --show-startup-time
@@ -10,5 +13,3 @@ fi
 # cjshopt login-startup-arg --no-syntax-highlighting
 # cjshopt login-startup-arg --no-completion-learning
 # cjshopt login-startup-arg --no-colors
-cjshopt status-hints off
-source ~/.profile

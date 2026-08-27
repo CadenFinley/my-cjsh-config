@@ -22,8 +22,8 @@ cjsh_prompt_status_precmd() {
     return "$last_status"
 }
 
-# PS1="cjsh> "
-# hook add precmd cjsh_prompt_status_precmd
+PS1="cjsh> "
+hook add precmd cjsh_prompt_status_precmd
 
 # cjshopt
 cjshopt current-line-number-highlight on
