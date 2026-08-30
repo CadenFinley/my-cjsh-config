@@ -10,7 +10,7 @@ t() {
     fi
 
     tmux new-session -d -s main
-    tmux split-window -h -t main:1
+    tmux split-window -h -t main:1 \; send-keys btop Enter
     tmux new-window -t main:2
     tmux select-window -t main:1
     tmux attach-session -t main
