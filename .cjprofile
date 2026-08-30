@@ -3,17 +3,22 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 	cjshopt login-startup-arg --secure
 	cjshopt status-hints off
 
-	t() {
-		if tmux has-session -t main 2>/dev/null; then
-			tmux attach-session -t main
+	tmux() {
+		if [ "$#" -gt 0 ]; then
+			command tmux "$@"
 			return
 		fi
 
-		tmux new-session -d -s main
-		tmux split-window -h -t main:1 \; send-keys btop Enter
-		tmux select-window -t main:1
-		tmux select-pane -L -t main:1
-		tmux attach-session -t main
+		if command tmux has-session -t main 2>/dev/null; then
+			command tmux attach-session -t main
+			return
+		fi
+
+		command tmux new-session -d -s main
+		command tmux split-window -h -t main:1 \; send-keys btop Enter
+		command tmux select-window -t main:1
+		command tmux select-pane -L -t main:1
+		command tmux attach-session -t main
 }
 else 
 	source ~/.profile
