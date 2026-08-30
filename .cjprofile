@@ -2,6 +2,19 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 cjshopt login-startup-arg --minimal
 cjshopt login-startup-arg --secure
 cjshopt status-hints off
+
+t() {
+    if tmux has-session -t main 2>/dev/null; then
+        tmux attach-session -t main
+        return
+    fi
+
+    tmux new-session -d -s main
+    tmux split-window -h -t main:1
+    tmux new-window -t main:2
+    tmux select-window -t main:1
+    tmux attach-session -t main
+}
 else 
 source ~/.profile
 fi
