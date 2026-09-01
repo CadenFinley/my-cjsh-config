@@ -1,0 +1,58 @@
+#!/usr/bin/env cjsh
+
+set -eu
+
+list=$(mktemp "${TMPDIR:-/tmp}/cjcloc.list.XXXXXX")
+rows=""
+trap 'rm -f "$list" "$rows"' EXIT
+trap 'exit 2' HUP INT TERM
+rows=$(mktemp "${TMPDIR:-/tmp}/cjcloc.rows.XXXXXX")
+
+if [ "$#" -eq 0 ]; then
+	set -- .
+fi
+
+for dir in "$@"; do
+	if [ ! -d "$dir" ]; then
+		printf 'cjcloc: %s is not a directory\n' "$dir" >&2
+		exit 1
+	fi
+done
+
+for dir in "$@"; do
+	find "$dir" \
+		\( -name .git -o -name node_modules -o -name build -o -name dist -o -name target -o -name .cache -o -name .next -o -name .venv -o -name venv \) -type d -prune \
+		-o -type f -print >>"$list"
+done
+
+total_files=$(wc -l <"$list")
+if [ "$total_files" -eq 0 ]; then
+	printf 'No files found.\n'
+	exit 0
+fi
+
+scanned=0
+counted=0
+total=0
+while IFS= read -r file <&3; do
+	scanned=$((scanned + 1))
+	if [ -f "$file" ] && { [ ! -s "$file" ] || LC_ALL=C grep -Iq . "$file" 2>/dev/null; }; then
+		if loc=$(wc -l <"$file" 2>/dev/null); then
+			printf '%s\t%s\n' "$loc" "$file" >>"$rows"
+			total=$((total + loc))
+			counted=$((counted + 1))
+		fi
+	fi
+	percent=$((scanned * 100 / total_files))
+	printf '\rProcessed %d/%d files (%d%%)' "$scanned" "$total_files" "$percent" >&2
+done 3<"$list"
+printf '\n' >&2
+
+if [ "$counted" -eq 0 ]; then
+	printf 'No text files found.\n'
+	exit 0
+fi
+
+sort -nr "$rows"
+printf '\n%8s %s\n' '--------' '-----'
+printf '%8d %s (%d files)\n' "$total" 'TOTAL' "$counted"

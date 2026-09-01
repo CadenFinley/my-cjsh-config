@@ -1,0 +1,134 @@
+#!/usr/bin/env cjsh
+
+set -eu
+
+list=$(mktemp "${TMPDIR:-/tmp}/cjcomplexity.list.XXXXXX")
+trap 'rm -f "$list"' EXIT
+trap 'exit 2' HUP INT TERM
+
+threshold=${CJCCPX_THRESHOLD:-15}
+top=${CJCCPX_TOP:-0}
+
+case "$threshold" in
+	''|*[!0-9]*)
+		printf 'cjcomplexity: CJCCPX_THRESHOLD must be an integer\n' >&2
+		exit 1
+		;;
+esac
+
+case "$top" in
+	''|*[!0-9]*)
+		printf 'cjcomplexity: CJCCPX_TOP must be an integer\n' >&2
+		exit 1
+		;;
+esac
+
+if [ "$#" -eq 0 ]; then
+	set -- .
+fi
+
+for dir in "$@"; do
+	if [ ! -d "$dir" ]; then
+		printf 'cjcomplexity: %s is not a directory\n' "$dir" >&2
+		exit 1
+	fi
+done
+
+if ! command -v python3 >/dev/null 2>&1; then
+	printf 'cjcomplexity: python3 is required\n' >&2
+	exit 1
+fi
+
+for dir in "$@"; do
+	find "$dir" \
+		\( -name .git -o -name node_modules -o -name build -o -name dist -o -name target -o -name .cache -o -name .next -o -name .venv -o -name venv \) -type d -prune \
+		-o -type f \( \
+			-name '*.c' -o -name '*.h' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' -o -name '*.hh' -o -name '*.hpp' \
+			-o -name '*.py' -o -name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \
+			-o -name '*.java' -o -name '*.go' -o -name '*.rs' -o -name '*.swift' \
+		\) -print >>"$list"
+done
+
+if [ ! -s "$list" ]; then
+	printf 'No source files found.\n'
+	exit 0
+fi
+
+sort -u "$list" -o "$list"
+
+python3 - "$list" "$threshold" "$top" <<'PY'
+from pathlib import Path
+import importlib.util
+import sys
+
+list_file = Path(sys.argv[1])
+threshold = int(sys.argv[2])
+top_n = int(sys.argv[3])
+
+if importlib.util.find_spec("lizard") is None:
+    print("cjcomplexity: python module 'lizard' is required.", file=sys.stderr)
+    print("Install it with: python3 -m pip install --user lizard", file=sys.stderr)
+    raise SystemExit(1)
+
+import lizard
+
+files = [line.rstrip("\n") for line in list_file.open(encoding="utf-8", errors="ignore") if line.strip()]
+if not files:
+    print("No source files found.")
+    raise SystemExit(0)
+
+rows = []
+total_nloc = 0
+total_funcs = 0
+total_ccn = 0
+total_high = 0
+
+for idx, path in enumerate(files, 1):
+    try:
+        info = lizard.analyze_file(path)
+    except Exception:
+        continue
+
+    funcs = list(info.function_list)
+    if not funcs:
+        continue
+
+    fn_count = len(funcs)
+    ccn_sum = sum(fn.cyclomatic_complexity for fn in funcs)
+    max_ccn = max(fn.cyclomatic_complexity for fn in funcs)
+    avg_ccn = ccn_sum / fn_count
+    high = sum(1 for fn in funcs if fn.cyclomatic_complexity > threshold)
+
+    rows.append((avg_ccn, max_ccn, fn_count, ccn_sum, info.nloc, high, path))
+    total_nloc += info.nloc
+    total_funcs += fn_count
+    total_ccn += ccn_sum
+    total_high += high
+
+    if idx % 100 == 0 or idx == len(files):
+        pct = int(idx * 100 / len(files))
+        print(f"\rAnalyzed {idx}/{len(files)} files ({pct}%)", end="", file=sys.stderr)
+
+print(file=sys.stderr)
+
+if not rows:
+    print("No analyzable functions found.")
+    raise SystemExit(0)
+
+rows.sort(key=lambda r: (r[0], r[1], r[3], r[5], r[2]), reverse=True)
+shown_rows = rows if top_n <= 0 or top_n >= len(rows) else rows[:top_n]
+
+high_label = f"HI(>{threshold})"
+print(f"{'AVG':>7} {'MAX':>5} {'FUNCS':>6} {'TOT_CCN':>8} {'NLOC':>7} {high_label:>8}  FILE")
+for avg_ccn, max_ccn, fn_count, file_ccn, nloc, high, path in shown_rows:
+    print(f"{avg_ccn:7.2f} {max_ccn:5d} {fn_count:6d} {file_ccn:8d} {nloc:7d} {high:8d}  {path}")
+
+overall_avg = (total_ccn / total_funcs) if total_funcs else 0.0
+print()
+print(f"{'FILES':>7} {'FUNCS':>8} {'NLOC':>8} {'TOT_CCN':>9} {'AVG_CCN':>9} {high_label:>8}")
+print(f"{len(rows):7d} {total_funcs:8d} {total_nloc:8d} {total_ccn:9d} {overall_avg:9.2f} {total_high:8d}")
+if len(shown_rows) == len(rows):
+    print("(showing all files by avg complexity)")
+else:
+    print(f"(showing top {len(shown_rows)} files by avg complexity)")
+PY
