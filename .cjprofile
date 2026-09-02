@@ -10,11 +10,13 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 		fi
 
 		if command tmux has-session -t main 2>/dev/null; then
+			command tmux rename-window -t main:1 dashboard
 			command tmux attach-session -t main
 			return
 		fi
 
 		command tmux new-session -d -s main
+		command tmux rename-window -t main:1 dashboard
 		command tmux split-window -h -t main:1 \; send-keys btop Enter
 		command tmux select-window -t main:1
 		command tmux select-pane -L -t main:1
