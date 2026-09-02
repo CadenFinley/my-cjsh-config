@@ -18,6 +18,9 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 		command tmux split-window -h -t main:1 \; send-keys btop Enter
 		command tmux select-window -t main:1
 		command tmux select-pane -L -t main:1
+		command tmux split-window -v -t main:1
+		command tmux select-pane -U -t main:1
+		command tmux send-keys -t main:1 'tput cols; tput lines' Enter
 		command tmux attach-session -t main
 }
 else 
