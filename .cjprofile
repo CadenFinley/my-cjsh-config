@@ -20,7 +20,9 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 		command tmux select-pane -L -t main:1
 		command tmux split-window -v -t main:1
 		command tmux select-pane -U -t main:1
-		command tmux send-keys -t main:1 'tput cols; tput lines' Enter
+		# Wait for the real client size, then let Linecast read the pane's tty.
+		command tmux send-keys -t main:1 \
+			'while [ $(command tmux display-message -p -t main:1 "#{session_attached}") -eq 0 ]; do sleep 0.05; done; env -u COLUMNS -u LINES linecast weather' Enter
 		command tmux attach-session -t main
 }
 else 
