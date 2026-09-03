@@ -26,6 +26,7 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 		command tmux send-keys -t main:1 \
 			'while [ $(command tmux display-message -p -t main:1 "#{session_attached}") -eq 0 ]; do sleep 0.05; done; env -u COLUMNS -u LINES linecast weather' Enter
 		command tmux select-pane -D -t main:1
+		command tmux send-keys -t main:1 'env -u COLUMNS -u LINES linecast radar' Enter
 		command tmux attach-session -t main
 }
 else 
