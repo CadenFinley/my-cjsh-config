@@ -32,7 +32,7 @@ cjsh_prompt_status_precmd() {
 	return "$last_status"
 }
 
-RPS1="\@"
+# RPS1="\@"
 # PS1="cjsh> "
 # hook add precmd cjsh_prompt_status_precmd
 
