@@ -32,6 +32,7 @@ cjsh_prompt_status_precmd() {
 	return "$last_status"
 }
 
+RPS1="\@"
 # PS1="cjsh> "
 # hook add precmd cjsh_prompt_status_precmd
 
@@ -47,12 +48,17 @@ cjshopt history-search-case off
 cjshopt mouse-clicking smart
 cjshopt mouse-clicking-status-line off
 cjshopt menu-highlighting reverse
+cjshopt right-prompt-follow-cursor on
 if command -v claude >/dev/null 2>&1; then
 	cjshopt agent-mode set \
 		--trigger-prefix 'ai: ' \
 		--command 'claude --effort low --print'
 fi
-
+if command -c claude-code >/dev/null 2>&1; then
+	cjshopt agent-mode set \
+		--trigger-prefix 'ai: ' \
+		--command 'claude-code --effort low --print'
+fi
 # keybinds
 cjshopt keybind ext set 'alt-b' --title 'Up One Directory' 'cjsh-widget set-buffer "cd .."; cjsh-widget accept'
 cjshopt keybind ext set 'alt-l' --title 'Previous Directory' 'cjsh-widget set-buffer "cd -"; cjsh-widget accept'
