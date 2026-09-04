@@ -32,12 +32,43 @@ else
         return
     }
 
+    # Switch themes in the current shell. Change POSH_CONFIG in ~/.cjshrc to
+    # make the selection persistent.
+    posh_theme() {
+        if [ "$#" -eq 0 ]; then
+            printf '%s\n' "${POSH_CONFIG:-default}"
+            return 0
+        fi
+        if [ "$#" -ne 1 ]; then
+            printf 'usage: posh_theme [default|THEME|CONFIG_PATH|URL]\n' >&2
+            return 2
+        fi
+
+        if [ "$1" = default ]; then
+            POSH_CONFIG=''
+            export POSH_CONFIG
+            return 0
+        fi
+
+        if [ -n "${POSH_THEMES_PATH:-}" ] && [ -r "$POSH_THEMES_PATH/$1.omp.json" ]; then
+            POSH_CONFIG="$POSH_THEMES_PATH/$1.omp.json"
+        elif [ -n "${POSH_THEMES_PATH:-}" ] && [ -r "$POSH_THEMES_PATH/$1.omp.yaml" ]; then
+            POSH_CONFIG="$POSH_THEMES_PATH/$1.omp.yaml"
+        elif [ -n "${POSH_THEMES_PATH:-}" ] && [ -r "$POSH_THEMES_PATH/$1.omp.toml" ]; then
+            POSH_CONFIG="$POSH_THEMES_PATH/$1.omp.toml"
+        else
+            POSH_CONFIG=$1
+        fi
+        export POSH_CONFIG
+    }
+
     _omp_preexec() {
         _omp_start_time=$("$_omp_executable" get millis)
     }
 
     _omp_render_prompt() {
         "$_omp_executable" print "$1" \
+            --config="$POSH_CONFIG" \
             --save-cache \
             --shell=cjsh \
             --shell-version="$CJSH_VERSION" \
@@ -99,9 +130,13 @@ else
     }
 
     PS2="$("$_omp_executable" print secondary \
+        --config="$POSH_CONFIG" \
         --shell=cjsh \
         --shell-version="$CJSH_VERSION")"
 
+    # Keep re-sourcing this adapter idempotent.
+    hook remove preexec _omp_preexec >/dev/null 2>&1
+    hook remove precmd _omp_precmd >/dev/null 2>&1
     hook add preexec _omp_preexec
     hook add precmd _omp_precmd
 fi

@@ -127,6 +127,15 @@ if [ -r "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh" ]; then
 	. "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh"
 fi
 
+# Oh My Posh theme.
+POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
+# POSH_CONFIG="$POSH_THEMES_PATH/powerlevel10k_classic.omp.json"
+# POSH_CONFIG="$POSH_THEMES_PATH/tonybaloney.omp.json"
+
+if [ -r "$CJSH_CONFIG_DIR/oh-my-posh.cjsh" ]; then
+	. "$CJSH_CONFIG_DIR/oh-my-posh.cjsh"
+fi
+
 cjcloc() {
 	"$CJSH_CONFIG_DIR/bin/cjcloc" "$@"
 }
