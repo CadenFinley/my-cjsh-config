@@ -97,6 +97,10 @@ abbr cjib="cmake --preset release"
 abbr cjb='cmake --build --preset release --parallel'
 abbr cjc="cmake --build build --target clean"
 abbr cjin="sudo cmake --install build"
+abbr cjrelease="  gh workflow run release.yml \
+    --ref v1.4.6 \
+    -f tag=v1.4.6 \
+    -f publish=true"
 
 # aliases
 if command ls --color=auto -d . >/dev/null 2>&1; then

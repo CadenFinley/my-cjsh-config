@@ -1,6 +1,7 @@
 if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 	cjshopt login-startup-arg --minimal
 	cjshopt login-startup-arg --secure
+	cjshopt login-startup-arg --no-agent
 	cjshopt status-hints off
 
 	tmux() {
@@ -30,10 +31,10 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 		command tmux attach-session -t main
 }
 else 
+	cjshopt login-startup-arg --show-startup-time
 	source ~/.profile
 fi
 # cjshopt login-startup-arg --no-titleline
-cjshopt login-startup-arg --show-startup-time
 # cjshopt login-startup-arg --posix
 # cjshopt login-startup-arg --no-prompt-vars
 # cjshopt login-startup-arg --no-titleline
