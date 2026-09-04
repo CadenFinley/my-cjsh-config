@@ -2,35 +2,35 @@ set -o globstar
 
 CJSH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cjsh"
 
-PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
-CJSH_NESTED_LEVEL=""
-case "${SHLVL:-}" in
-	''|*[!0-9]*) ;;
-	*)
-		if [ "$SHLVL" -ge 3 ]; then
-			CJSH_NESTED_LEVEL=$SHLVL
-		elif [ "$SHLVL" -eq 2 ] && [ -z "${TMUX:-}" ]; then
-			CJSH_NESTED_LEVEL=$SHLVL
-		fi
-		;;
-esac
-if [ -n "$CJSH_NESTED_LEVEL" ]; then
-	PS1_FINAL="[ic-diminish]SHLVL=$CJSH_NESTED_LEVEL[/] $PS1_FINAL"
-fi
+# PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
+# CJSH_NESTED_LEVEL=""
+# case "${SHLVL:-}" in
+	# ''|*[!0-9]*) ;;
+	# *)
+		# if [ "$SHLVL" -ge 3 ]; then
+			# CJSH_NESTED_LEVEL=$SHLVL
+		# elif [ "$SHLVL" -eq 2 ] && [ -z "${TMUX:-}" ]; then
+			# CJSH_NESTED_LEVEL=$SHLVL
+		# fi
+		# ;;
+# esac
+# if [ -n "$CJSH_NESTED_LEVEL" ]; then
+	# PS1_FINAL="[ic-diminish]SHLVL=$CJSH_NESTED_LEVEL[/] $PS1_FINAL"
+# fi
 
-cjsh_prompt_status_precmd() {
-	local last_status=$?
-
-	if [ "$last_status" -eq 0 ]; then
-		PS1="cjsh> "
-	elif [ "$last_status" -eq 127 ] || [ "$last_status" -eq 137 ] || [ "$last_status" -eq 134 ]; then
-		PS1="[color=ansi-red]$last_status[/color] cjsh> "
-	else
-		PS1="[color=ansi-yellow]$last_status[/color] cjsh> "
-	fi
-
-	return "$last_status"
-}
+# cjsh_prompt_status_precmd() {
+	# local last_status=$?
+#
+	# if [ "$last_status" -eq 0 ]; then
+		# PS1="cjsh> "
+	# elif [ "$last_status" -eq 127 ] || [ "$last_status" -eq 137 ] || [ "$last_status" -eq 134 ]; then
+		# PS1="[color=ansi-red]$last_status[/color] cjsh> "
+	# else
+		# PS1="[color=ansi-yellow]$last_status[/color] cjsh> "
+	# fi
+#
+	# return "$last_status"
+# }
 
 # RPS1="\@"
 # PS1="cjsh> "
@@ -133,6 +133,7 @@ fi
 POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
 # POSH_CONFIG="$POSH_THEMES_PATH/powerlevel10k_classic.omp.json"
 # POSH_CONFIG="$POSH_THEMES_PATH/tonybaloney.omp.json"
+POSH_CONFIG="$POSH_THEMES_PATH/spaceship.omp.json"
 
 if [ -r "$CJSH_CONFIG_DIR/oh-my-posh.cjsh" ]; then
 	. "$CJSH_CONFIG_DIR/oh-my-posh.cjsh"
