@@ -1,0 +1,107 @@
+# oh-my-posh.cjsh
+#
+# Native Oh My Posh adapter for CJ's Shell. Source this file from ~/.cjshrc
+# after setting POSH_CONFIG when a non-default theme is desired.
+
+_omp_command=${OMP_EXECUTABLE:-oh-my-posh}
+_omp_executable=$(command -v "$_omp_command" 2>/dev/null)
+
+if [ -z "$_omp_executable" ]; then
+    printf 'cjsh: Oh My Posh executable not found: %s\n' "$_omp_command" >&2
+else
+    export POSH_SESSION_ID=${POSH_SESSION_ID:-cjsh-$$}
+    export POSH_CONFIG=${POSH_CONFIG:-}
+    export POSH_SHELL=cjsh
+    export POSH_SHELL_VERSION=$CJSH_VERSION
+    export POWERLINE_COMMAND=oh-my-posh
+    export CONDA_PROMPT_MODIFIER=false
+    export VIRTUAL_ENV_DISABLE_PROMPT=1
+    export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+
+    _omp_start_time=''
+    _omp_execution_time=-1
+    _omp_no_status=true
+    _omp_status=0
+    _omp_pipestatus=0
+    _omp_job_count=0
+    _omp_stack_count=0
+
+    # Override this function after sourcing the adapter to export extra context
+    # immediately before Oh My Posh renders a prompt.
+    set_poshcontext() {
+        return
+    }
+
+    _omp_preexec() {
+        _omp_start_time=$("$_omp_executable" get millis)
+    }
+
+    _omp_render_prompt() {
+        "$_omp_executable" print "$1" \
+            --save-cache \
+            --shell=cjsh \
+            --shell-version="$CJSH_VERSION" \
+            --status="$_omp_status" \
+            --pipestatus="$_omp_pipestatus" \
+            --no-status="$_omp_no_status" \
+            --execution-time="$_omp_execution_time" \
+            --job-count="$_omp_job_count" \
+            --stack-count="$_omp_stack_count" \
+            --terminal-width="${COLUMNS:-0}"
+    }
+
+    _omp_precmd() {
+        # Capture both values in one assignment so the assignment itself cannot
+        # overwrite PIPESTATUS before it is saved.
+        _omp_command_state="$?:$PIPESTATUS"
+        _omp_status="${_omp_command_state%%:*}"
+        _omp_pipestatus="${_omp_command_state#*:}"
+        _omp_last_pipe_status="${_omp_pipestatus##* }"
+        if [ "$_omp_last_pipe_status" != "$_omp_status" ]; then
+            _omp_pipestatus=$_omp_status
+        fi
+
+        _omp_execution_time=-1
+        _omp_no_status=true
+        if [ -n "$_omp_start_time" ]; then
+            _omp_now=$("$_omp_executable" get millis)
+            _omp_execution_time=$((_omp_now - _omp_start_time))
+            _omp_no_status=false
+        fi
+        _omp_start_time=''
+
+        _omp_job_count=$(jobs -p 2>/dev/null | wc -l | tr -d ' ')
+        _omp_stack_count=$(dirs -p 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$_omp_stack_count" -gt 0 ]; then
+            _omp_stack_count=$((_omp_stack_count - 1))
+        fi
+
+        set_poshcontext
+
+        PS1="$(_omp_render_prompt primary)"
+        RPS1="$(_omp_render_prompt right)"
+
+        _omp_transient_prompt="$(_omp_render_prompt transient)"
+        if [ -n "$_omp_transient_prompt" ]; then
+            PS1_FINAL=$_omp_transient_prompt
+        else
+            unset PS1_FINAL
+        fi
+
+        _omp_transient_rprompt="$(_omp_render_prompt transient-right)"
+        if [ -n "$_omp_transient_rprompt" ]; then
+            RPS1_FINAL=$_omp_transient_rprompt
+        else
+            unset RPS1_FINAL
+        fi
+
+        return "$_omp_status"
+    }
+
+    PS2="$("$_omp_executable" print secondary \
+        --shell=cjsh \
+        --shell-version="$CJSH_VERSION")"
+
+    hook add preexec _omp_preexec
+    hook add precmd _omp_precmd
+fi

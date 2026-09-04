@@ -116,6 +116,12 @@ fi
 alias vim="nvim"
 alias vi="nvim"
 
+function _drift_idle() {
+	command -v drift >/dev/null 2>&1 && drift
+}
+cjshopt idle-timeout "${DRIFT_TIMEOUT:-180}"
+hook add idle _drift_idle
+
 # zoxide
 if [ -r "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh" ]; then
 	. "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh"
