@@ -39,7 +39,7 @@ cjsh_prompt_status_precmd() {
 # cjshopt
 cjshopt multiline-max-lines 25
 cjshopt current-line-number-highlight on
-cjshopt line-numbers-replace-prompt on
+# cjshopt line-numbers-replace-prompt on
 cjshopt line-numbers-continuation on
 cjshopt set-history-max 100000
 cjshopt set-completion-max 100000
@@ -126,6 +126,8 @@ hook add idle _drift_idle
 if [ -r "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh" ]; then
 	. "$CJSH_CONFIG_DIR/zoxide_cjsh_init.sh"
 fi
+
+# . "$CJSH_CONFIG_DIR/gruvbox_dark_highlighting.cjsh"
 
 # Oh My Posh theme.
 POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
