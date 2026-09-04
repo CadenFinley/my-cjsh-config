@@ -25,6 +25,9 @@ else
     _omp_pipestatus=0
     _omp_job_count=0
     _omp_stack_count=0
+    _omp_config_features_cached=false
+    _omp_config_features_for=''
+    _omp_has_transient_prompt=false
 
     # Override this function after sourcing the adapter to export extra context
     # immediately before Oh My Posh renders a prompt.
@@ -60,6 +63,30 @@ else
             POSH_CONFIG=$1
         fi
         export POSH_CONFIG
+        _omp_config_features_cached=false
+    }
+
+    _omp_refresh_config_features() {
+        if [ "$_omp_config_features_cached" = true ]; then
+            if [ "$_omp_config_features_for" = "$POSH_CONFIG" ]; then
+                return
+            fi
+        fi
+
+        _omp_config_features_for=$POSH_CONFIG
+        _omp_config_features_cached=true
+        _omp_has_transient_prompt=false
+
+        # `print transient` returns Oh My Posh's built-in "<shell>> " prompt
+        # even when the active config has no transient_prompt. Inspect the
+        # resolved config so that fallback is not mistaken for theme output.
+        if _omp_exported_config=$("$_omp_executable" config export \
+            --config="$POSH_CONFIG" --format=json 2>/dev/null); then
+            case $_omp_exported_config in
+                *'"transient_prompt"'*) _omp_has_transient_prompt=true ;;
+            esac
+        fi
+        _omp_exported_config=''
     }
 
     _omp_preexec() {
@@ -112,11 +139,16 @@ else
         PS1="$(_omp_render_prompt primary)"
         RPS1="$(_omp_render_prompt right)"
 
-        _omp_transient_prompt="$(_omp_render_prompt transient)"
-        if [ -n "$_omp_transient_prompt" ]; then
-            PS1_FINAL=$_omp_transient_prompt
+        _omp_refresh_config_features
+        if [ "$_omp_has_transient_prompt" = true ]; then
+            _omp_transient_prompt="$(_omp_render_prompt transient)"
+            if [ -n "$_omp_transient_prompt" ]; then
+                PS1_FINAL=$_omp_transient_prompt
+            else
+                PS1_FINAL=$PS1
+            fi
         else
-            unset PS1_FINAL
+            PS1_FINAL=$PS1
         fi
 
         _omp_transient_rprompt="$(_omp_render_prompt transient-right)"
