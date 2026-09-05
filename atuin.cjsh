@@ -1,0 +1,134 @@
+# atuin.cjsh
+#
+# Standalone Atuin integration for CJ's Shell. Source this file from ~/.cjshrc:
+#
+#   source /path/to/atuin.cjsh
+#
+# Set ATUIN_NOBIND before sourcing to register history hooks without changing
+# keys. ATUIN_CJSH_DISABLE_CTRL_R and ATUIN_CJSH_DISABLE_UP_ARROW disable either
+# default binding independently.
+
+if ! command -v atuin >/dev/null 2>&1; then
+    printf 'cjsh: atuin integration: atuin is not installed or not on PATH\n' >&2
+    return 1
+fi
+
+if [ -z "${ATUIN_SESSION:-}" ] || [ "${ATUIN_SHLVL:-}" != "${SHLVL:-}" ]; then
+    ATUIN_SESSION=$(atuin uuid)
+    if [ -z "$ATUIN_SESSION" ]; then
+        printf 'cjsh: atuin integration: failed to create an Atuin session\n' >&2
+        return 1
+    fi
+    ATUIN_SHLVL=${SHLVL:-}
+    export ATUIN_SESSION ATUIN_SHLVL
+fi
+
+ATUIN_HISTORY_ID=
+export ATUIN_HISTORY_ID
+
+__cjsh_atuin_preexec() {
+    local __atuin_id
+    __atuin_id=$(ATUIN_SHELL=cjsh atuin history start --hook -- "$1" 2>/dev/null)
+    ATUIN_HISTORY_ID=$__atuin_id
+    export ATUIN_HISTORY_ID
+}
+
+__cjsh_atuin_precmd() {
+    local __atuin_exit=$?
+    local __atuin_duration
+    local __atuin_id=$ATUIN_HISTORY_ID
+
+    if [ -z "$__atuin_id" ]; then
+        return 0
+    fi
+
+    if [ -n "${CJSH_COMMAND_DURATION_MS:-}" ]; then
+        __atuin_duration=${CJSH_COMMAND_DURATION_MS}000000
+        ATUIN_SHELL=cjsh atuin history end --hook --exit "$__atuin_exit" \
+            --duration "$__atuin_duration" -- "$__atuin_id" >/dev/null 2>&1
+    else
+        ATUIN_SHELL=cjsh atuin history end --hook --exit "$__atuin_exit" \
+            -- "$__atuin_id" >/dev/null 2>&1
+    fi
+
+    ATUIN_HISTORY_ID=
+    export ATUIN_HISTORY_ID
+}
+
+__cjsh_atuin_search() {
+    local __atuin_original=$CJSH_LINE
+    local __atuin_output
+    local __atuin_result_file
+    local __atuin_status
+
+    __atuin_result_file=$(mktemp "${TMPDIR:-/tmp}/atuin-cjsh.XXXXXXXXXX") || return 1
+
+    # Atuin renders its TUI on stdout and returns the selected command on
+    # stderr. Run the TUI directly so it owns the foreground terminal, and
+    # collect only its result in a temporary file.
+    ATUIN_SHELL=cjsh ATUIN_QUERY="$CJSH_LINE" \
+        atuin search "$@" --interactive 2>"$__atuin_result_file"
+    __atuin_status=$?
+    __atuin_output=$(command cat "$__atuin_result_file")
+    command rm -f "$__atuin_result_file"
+
+    if [ "$__atuin_status" -ne 0 ]; then
+        if [ -n "$__atuin_output" ]; then
+            printf '%s\n' "$__atuin_output" >&2
+        fi
+        return "$__atuin_status"
+    fi
+
+    if [ -z "$__atuin_output" ]; then
+        return 0
+    fi
+
+    case "$__atuin_output" in
+        __atuin_accept__:*)
+            CJSH_LINE=${__atuin_output#__atuin_accept__:}
+            CJSH_POINT=${#CJSH_LINE}
+            cjsh-widget accept
+            ;;
+        __atuin_chain_command__:*)
+            __atuin_output=${__atuin_output#__atuin_chain_command__:}
+            if [ -n "$__atuin_original" ]; then
+                CJSH_LINE="$__atuin_original $__atuin_output"
+            else
+                CJSH_LINE=$__atuin_output
+            fi
+            CJSH_POINT=${#CJSH_LINE}
+            ;;
+        *)
+            CJSH_LINE=$__atuin_output
+            CJSH_POINT=${#CJSH_LINE}
+            ;;
+    esac
+}
+
+__cjsh_atuin_up_search() {
+    case "$CJSH_LINE" in
+        *'
+'*)
+            cjsh-widget action cursor-up
+            ;;
+        *)
+            __cjsh_atuin_search --shell-up-key-binding
+            ;;
+    esac
+}
+
+hook add preexec __cjsh_atuin_preexec
+hook add precmd __cjsh_atuin_precmd
+
+# Match Atuin's ATUIN_NOBIND behavior. The two cjsh-specific variables make
+# the equivalent of Atuin's --disable-* init flags available to a static file.
+if [ "${ATUIN_NOBIND+x}" != x ]; then
+    if [ -z "${ATUIN_CJSH_DISABLE_CTRL_R:-}" ]; then
+        cjshopt keybind ext set 'ctrl-r' --title 'Atuin history search' \
+            '__cjsh_atuin_search' >/dev/null
+    fi
+    if [ -z "${ATUIN_CJSH_DISABLE_UP_ARROW:-}" ]; then
+        cjshopt keybind ext set 'up' --title 'Atuin history search (current context)' \
+            '__cjsh_atuin_up_search' >/dev/null
+    fi
+fi
