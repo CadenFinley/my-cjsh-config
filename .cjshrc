@@ -2,39 +2,39 @@ set -o globstar
 
 CJSH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cjsh"
 
-# PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
-# CJSH_NESTED_LEVEL=""
-# case "${SHLVL:-}" in
-	# ''|*[!0-9]*) ;;
-	# *)
-		# if [ "$SHLVL" -ge 3 ]; then
-			# CJSH_NESTED_LEVEL=$SHLVL
-		# elif [ "$SHLVL" -eq 2 ] && [ -z "${TMUX:-}" ]; then
-			# CJSH_NESTED_LEVEL=$SHLVL
-		# fi
-		# ;;
-# esac
-# if [ -n "$CJSH_NESTED_LEVEL" ]; then
-	# PS1_FINAL="[ic-diminish]SHLVL=$CJSH_NESTED_LEVEL[/] $PS1_FINAL"
-# fi
+PS1_FINAL='\D{%a %b %-d %H:%M} [ic-diminish]>[/] '
+CJSH_NESTED_LEVEL=""
+case "${SHLVL:-}" in
+	''|*[!0-9]*) ;;
+	*)
+		if [ "$SHLVL" -ge 3 ]; then
+			CJSH_NESTED_LEVEL=$SHLVL
+		elif [ "$SHLVL" -eq 2 ] && [ -z "${TMUX:-}" ]; then
+			CJSH_NESTED_LEVEL=$SHLVL
+		fi
+		;;
+esac
+if [ -n "$CJSH_NESTED_LEVEL" ]; then
+	PS1_FINAL="[ic-diminish]SHLVL=$CJSH_NESTED_LEVEL[/] $PS1_FINAL"
+fi
 
-# cjsh_prompt_status_precmd() {
-	# local last_status=$?
-#
-	# if [ "$last_status" -eq 0 ]; then
-		# PS1="cjsh> "
-	# elif [ "$last_status" -eq 127 ] || [ "$last_status" -eq 137 ] || [ "$last_status" -eq 134 ]; then
-		# PS1="[color=ansi-red]$last_status[/color] cjsh> "
-	# else
-		# PS1="[color=ansi-yellow]$last_status[/color] cjsh> "
-	# fi
-#
-	# return "$last_status"
-# }
+cjsh_prompt_status_precmd() {
+	local last_status=$?
 
-# RPS1="\@"
-# PS1="cjsh> "
-# hook add precmd cjsh_prompt_status_precmd
+	if [ "$last_status" -eq 0 ]; then
+		PS1="cjsh> "
+	elif [ "$last_status" -eq 127 ] || [ "$last_status" -eq 137 ] || [ "$last_status" -eq 134 ]; then
+		PS1="[color=ansi-red]$last_status[/color] cjsh> "
+	else
+		PS1="[color=ansi-yellow]$last_status[/color] cjsh> "
+	fi
+
+	return "$last_status"
+}
+
+RPS1="\@"
+PS1="cjsh> "
+hook add precmd cjsh_prompt_status_precmd
 
 # cjshopt
 cjshopt multiline-max-lines 25
@@ -42,7 +42,7 @@ cjshopt current-line-number-highlight on
 # cjshopt line-numbers-replace-prompt on
 cjshopt line-numbers-continuation on
 cjshopt set-history-max 100000
-cjshopt set-completion-max 100000
+cjshopt set-completion-max 100
 cjshopt completion-menu-expanded on
 cjshopt history-search-case off
 cjshopt mouse-clicking smart
@@ -139,14 +139,13 @@ fi
 	# . "$CJSH_CONFIG_DIR/starship_init.cjsh"
 # fi
 
-if [ -r "$CJSH_CONFIG_DIR/oh-my-posh.cjsh" ]; then
-	. "$CJSH_CONFIG_DIR/oh-my-posh.cjsh"
-fi
+# if [ -r "$CJSH_CONFIG_DIR/oh-my-posh.cjsh" ]; then
+	# . "$CJSH_CONFIG_DIR/oh-my-posh.cjsh"
+# fi
 
-INTELLI_HOME="$HOME/Library/Application Support/org.IntelliShell.Intelli-Shell"
-PATH="$INTELLI_HOME/bin:$PATH"
-export INTELLI_HOME PATH
-
+# INTELLI_HOME="$HOME/Library/Application Support/org.IntelliShell.Intelli-Shell"
+# PATH="$INTELLI_HOME/bin:$PATH"
+# export INTELLI_HOME PATH
 # if command -v intelli-shell >/dev/null 2>&1 && [ -r "$CJSH_CONFIG_DIR/intelli-shell.cjsh" ]; then
 	# . "$CJSH_CONFIG_DIR/intelli-shell.cjsh"
 # fi
@@ -175,3 +174,5 @@ shlvl_status_line_callback() {
 }
 
 cjshopt status-line-callback shlvl_status_line_callback
+
+	export PATH="/opt/homebrew/opt/bash/bin:$PATH"
