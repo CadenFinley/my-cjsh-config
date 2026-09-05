@@ -1,0 +1,78 @@
+# IntelliShell integration for CJ's Shell (cjsh).
+# Source this file from ~/.cjshrc after intelli-shell is on PATH.
+
+_intelli_exec() {
+    local intelli_result_file
+    local intelli_exit_status
+    local intelli_output_status
+    local intelli_action
+    local intelli_command
+
+    intelli_result_file=$(mktemp "${TMPDIR:-/tmp}/intelli-shell.XXXXXX") || return 1
+
+    intelli-shell --skip-execution --file-output "$intelli_result_file" "$@"
+    intelli_exit_status=$?
+
+    if [ ! -s "$intelli_result_file" ]; then
+        rm -f "$intelli_result_file" 2>/dev/null
+        return "$intelli_exit_status"
+    fi
+
+    intelli_output_status=$(sed -n '1p' "$intelli_result_file")
+    intelli_action=$(sed -n '2p' "$intelli_result_file")
+    intelli_command=$(sed '1,2d' "$intelli_result_file")
+    rm -f "$intelli_result_file" 2>/dev/null
+
+    case "$intelli_action" in
+        REPLACE)
+            CJSH_LINE=$intelli_command
+            CJSH_POINT=${#intelli_command}
+            ;;
+        EXECUTE)
+            CJSH_LINE=$intelli_command
+            CJSH_POINT=${#intelli_command}
+            cjsh-widget accept
+            ;;
+    esac
+
+    # IntelliShell uses DIRTY when its TUI has written terminal output. cjsh's
+    # editor redraws after a command binding returns, so no explicit redraw is
+    # required for either CLEAN or DIRTY results.
+    [ "$intelli_output_status" = CLEAN ] || [ "$intelli_output_status" = DIRTY ]
+    return "$intelli_exit_status"
+}
+
+_intelli_search() {
+    _intelli_exec search -i "$CJSH_LINE"
+}
+
+_intelli_save() {
+    _intelli_exec new -i "$CJSH_LINE"
+}
+
+_intelli_variable() {
+    _intelli_exec replace -i "$CJSH_LINE"
+}
+
+_intelli_fix() {
+    local intelli_history
+    intelli_history=$(fc -l -n -5 2>/dev/null)
+    _intelli_exec fix --history "$intelli_history" "$CJSH_LINE"
+}
+
+intelli_search_key=${INTELLI_SEARCH_HOTKEY:-ctrl-space}
+intelli_bookmark_key=${INTELLI_BOOKMARK_HOTKEY:-ctrl-b}
+intelli_variable_key=${INTELLI_VARIABLE_HOTKEY:-ctrl-l}
+intelli_fix_key=${INTELLI_FIX_HOTKEY:-ctrl-x}
+
+if [ "${INTELLI_SKIP_ESC_BIND:-0}" = 0 ]; then
+    cjshopt keybind ext set esc --title 'IntelliShell: Clear Line' 'cjsh-widget clear'
+fi
+
+cjshopt keybind ext set "$intelli_search_key" --title 'IntelliShell: Search' '_intelli_search'
+cjshopt keybind ext set "$intelli_bookmark_key" --title 'IntelliShell: Bookmark' '_intelli_save'
+cjshopt keybind ext set "$intelli_variable_key" --title 'IntelliShell: Replace Variables' '_intelli_variable'
+cjshopt keybind ext set "$intelli_fix_key" --title 'IntelliShell: Fix Command' '_intelli_fix'
+
+INTELLI_EXEC_PROMPT=$(printf '%s' "$PS2" | sed 's/\[[^]]*\]//g')
+export INTELLI_EXEC_PROMPT

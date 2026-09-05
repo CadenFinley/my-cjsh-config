@@ -130,14 +130,26 @@ fi
 # . "$CJSH_CONFIG_DIR/gruvbox_dark_highlighting.cjsh"
 
 # Oh My Posh theme.
-POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
+# POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
 # POSH_CONFIG="$POSH_THEMES_PATH/powerlevel10k_classic.omp.json"
-POSH_CONFIG="$POSH_THEMES_PATH/tonybaloney.omp.json"
+# POSH_CONFIG="$POSH_THEMES_PATH/tonybaloney.omp.json"
 # POSH_CONFIG="$POSH_THEMES_PATH/spaceship.omp.json"
+
+# if [ -r "$CJSH_CONFIG_DIR/starship_init.cjsh" ]; then
+	# . "$CJSH_CONFIG_DIR/starship_init.cjsh"
+# fi
 
 if [ -r "$CJSH_CONFIG_DIR/oh-my-posh.cjsh" ]; then
 	. "$CJSH_CONFIG_DIR/oh-my-posh.cjsh"
 fi
+
+INTELLI_HOME="$HOME/Library/Application Support/org.IntelliShell.Intelli-Shell"
+PATH="$INTELLI_HOME/bin:$PATH"
+export INTELLI_HOME PATH
+
+# if command -v intelli-shell >/dev/null 2>&1 && [ -r "$CJSH_CONFIG_DIR/intelli-shell.cjsh" ]; then
+	# . "$CJSH_CONFIG_DIR/intelli-shell.cjsh"
+# fi
 
 cjcloc() {
 	"$CJSH_CONFIG_DIR/bin/cjcloc" "$@"
