@@ -150,7 +150,8 @@ export INTELLI_HOME PATH
 # if command -v intelli-shell >/dev/null 2>&1 && [ -r "$CJSH_CONFIG_DIR/intelli-shell.cjsh" ]; then
 	# . "$CJSH_CONFIG_DIR/intelli-shell.cjsh"
 # fi
-. "$HOME/.atuin/bin/env"
+# . "$HOME/.atuin/bin/env"
+# . ~/.config/cjsh/atuin.cjsh
 cjcloc() {
 	"$CJSH_CONFIG_DIR/bin/cjcloc" "$@"
 }
