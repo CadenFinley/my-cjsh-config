@@ -91,6 +91,7 @@ abbr cjv="cjsh --version"
 
 # cjsh development abbreviations
 abbr trst="./tests/run_shell_tests.sh"
+abbr ctrst=" ctest --preset release --parallel 8"
 abbr bcjv="./build/release/cjsh --version"
 abbr cjr="./build/release/cjsh"
 abbr cjib="cmake --preset release"
