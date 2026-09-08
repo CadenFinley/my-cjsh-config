@@ -42,7 +42,7 @@ cjshopt current-line-number-highlight on
 # cjshopt line-numbers-replace-prompt on
 cjshopt line-numbers-continuation on
 cjshopt set-history-max 100000
-cjshopt set-completion-max 100
+cjshopt set-completion-max 500
 cjshopt completion-menu-expanded on
 cjshopt history-search-case off
 cjshopt mouse-clicking smart
