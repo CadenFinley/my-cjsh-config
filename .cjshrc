@@ -37,7 +37,9 @@ fi
 # hook add precmd cjsh_prompt_status_precmd
 
 # cjshopt
-cjshopt multiline-max-lines 25
+cjshopt multiline-max-lines 30
+cjshopt menu-max-lines 30
+cjshopt multiline-bottom-lines 2
 cjshopt current-line-number-highlight on
 # cjshopt line-numbers-replace-prompt on
 cjshopt line-numbers-continuation on
