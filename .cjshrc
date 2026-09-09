@@ -92,8 +92,7 @@ done"'
 abbr cjv="cjsh --version"
 
 # cjsh development abbreviations
-abbr trst="./tests/run_shell_tests.sh"
-abbr ctrst=" ctest --preset release --parallel 8"
+abbr trst=" ctest --preset release --parallel 8"
 abbr bcjv="./build/release/cjsh --version"
 abbr cjr="./build/release/cjsh"
 abbr cjib="cmake --preset release"
@@ -132,7 +131,6 @@ fi
 
 # . "$CJSH_CONFIG_DIR/gruvbox_dark_highlighting.cjsh"
 
-# Oh My Posh theme.
 # POSH_THEMES_PATH=/opt/homebrew/opt/oh-my-posh/themes
 # POSH_CONFIG="$POSH_THEMES_PATH/powerlevel10k_classic.omp.json"
 # POSH_CONFIG="$POSH_THEMES_PATH/tonybaloney.omp.json"
