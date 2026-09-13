@@ -44,17 +44,19 @@ cjshopt current-line-number-highlight on
 # cjshopt line-numbers-replace-prompt on
 cjshopt line-numbers-continuation on
 cjshopt set-history-max 100000
-cjshopt set-completion-max 500
+cjshopt set-completion-max 50000
 cjshopt completion-menu-expanded on
 cjshopt history-search-case off
 cjshopt mouse-clicking smart
 cjshopt mouse-clicking-status-line off
 cjshopt menu-highlighting reverse
 cjshopt right-prompt-follow-cursor on
+cjshopt history-directory on
+cjshopt history-directory-subdirs on
 if command -v claude >/dev/null 2>&1; then
 	cjshopt agent-mode set \
 		--trigger-prefix 'ai: ' \
-		--command 'claude --effort low --print'
+		--command 'claude --effort medium --print'
 fi
 if command -c claude-code >/dev/null 2>&1; then
 	cjshopt agent-mode set \

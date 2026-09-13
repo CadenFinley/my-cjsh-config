@@ -3,7 +3,7 @@ if [ "${SHLVL:-0}" -eq 1 ] && [ -z "${TMUX:-}" ]; then
 	# cjshopt login-startup-arg --secure
 	# cjshopt login-startup-arg --no-agent
 	# cjshopt status-hints off
-
+	unset PS1
 	tmux() {
 		if [ "$#" -gt 0 ]; then
 			command tmux "$@"
